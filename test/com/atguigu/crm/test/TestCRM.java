@@ -21,6 +21,7 @@ public class TestCRM {
 		Page<SalesChance> page = salesChanceService.getPage(2);
 		System.out.println(page.getTotalElements());
 		System.out.println(page.getTotalPages());
+			System.out.println("page.getTotalPages()");
 		
 	}
 	
