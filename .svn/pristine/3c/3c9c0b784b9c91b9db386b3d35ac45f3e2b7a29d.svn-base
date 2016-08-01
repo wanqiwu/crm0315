@@ -1,0 +1,152 @@
+package com.atguigu.crm.service;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.atguigu.crm.entity.SalesChance;
+import com.atguigu.crm.mapper.SalesChanceMapper;
+import com.atguigu.crm.orm.Page;
+
+@Service
+public class SalesChanceService {
+
+	@Autowired
+	private SalesChanceMapper salesChanceMapper;
+	
+	@Transactional
+	public void update(SalesChance salesChance){
+		
+		salesChanceMapper.update(salesChance);
+	}
+	
+	@Transactional(readOnly=true)
+	public SalesChance getById(Integer id){
+		
+		SalesChance salesChance = salesChanceMapper.getById(id);
+		
+		return salesChance;
+		
+	}
+	
+	@Transactional
+	public void save(SalesChance salesChance){
+		
+		salesChance.setStatus(1);
+		salesChanceMapper.save(salesChance);
+		
+	}
+	
+	
+	@Transactional
+	public void delete(Integer id){
+		
+		salesChanceMapper.delete(id);
+	}
+	
+	@Transactional(readOnly=true)
+	public Page<SalesChance> getPage2(int pageNo,Map<String,Object> requestParams) throws ParseException{
+		Page<SalesChance> page = new Page<SalesChance>();
+		
+		page.setPageNo(pageNo);
+		
+		//如何把页面传入的 params 转为 mybatis 可用的 params?
+		//1. 在 LIKE 比较时需要转换: 把 value 值的前后都加上 %
+		//2. 需要把实际上传入的 value 值的类型转为目标类型.
+		//3. 这就要求, 在传入参数时, 需要知道比较的方式是否为 LIKE . 目标参数的类型是什么 ? 
+		//{D_createDate=1990-12-12, LIKE_contact=c, LIKE_custName=a, LIKE_title=b}
+		//search_D_createDate=1990-12-12&search_LIKE_contact=c&search_LIKE_custName=a&search_LIKE_title=b
+		//createDate=Date 类型的 1990-12-12(而不是字符串类型的). D 的作用即为把字符串 1990-12-12 转为 Date 类型的 1990-12-12
+		//contact=%c%
+		//字符串和基本数据类型之间不需要进行额外的转换. mybatis 可以完成转换
+		//<input type="text" name="search_salary"/>
+		Map<String,Object> params = parseRequestParams2MybatisParams(requestParams);
+		
+		
+		int totalElements = salesChanceMapper.getTotalElements2(params);
+		page.setTotalElements(totalElements);
+		
+		int firstIndex = (page.getPageNo() - 1) * page.getPageSize() +1;
+		int endIndex = firstIndex + page.getPageSize();
+		
+		params.put("firstIndex", firstIndex);
+		params.put("endIndex", endIndex);
+		
+		List<SalesChance> content = salesChanceMapper.getContent2(params);
+		
+		page.setContent(content);
+		
+		return page;
+		
+	}
+	
+	private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	
+	//将请求参数的Map转换为Mybatis的Map。只转换Date和模糊查询的String类型。只转换D_和Like_的类型。
+	//字符串和基本数据类型之间不需要进行额外的转换. mybatis 可以完成转换
+	private Map<String, Object> parseRequestParams2MybatisParams(
+			Map<String, Object> requestParams) throws ParseException {
+	
+		Map<String,Object> result = new HashMap<String,Object>();
+		
+		for(Map.Entry<String, Object> entry:requestParams.entrySet()){
+			
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			if(key.startsWith("D_")){
+				//去掉"D_"，并将页面传过来的字符串转换为Date类型的参数
+				key = key.substring(2);
+				value = dateFormat.parse((String)value);
+			}
+			
+			if(key.startsWith("LIKE_")){
+				key = key.substring(5);
+				value = "%"+value+"%";
+			}
+			
+			result.put(key, value);
+		}
+		return result;
+	}
+
+	@Transactional(readOnly=true)
+	public Page<SalesChance> getPage(int pageNo){
+		
+//		创建 Page 对象
+		Page<SalesChance> page = new Page<SalesChance>();
+		
+//		设置 pageNo 属性. 同时校验 pageNo 的合法性: 校验其是否大于 0
+		page.setPageNo(pageNo);
+		
+//		获取总的记录数. 校验 pageNo 的合法性: 此时已经可以由 总的记录数和 pageSize 计算出总页数, 进而校验 pageNo 是否在合法的区间
+		int totalElements = salesChanceMapper.getTotalElements();
+		page.setTotalElements(totalElements);
+		
+//		查询当前页面的 content
+		int firstIndex = (page.getPageNo() - 1) * page.getPageSize() +1;
+		int endIndex = firstIndex + page.getPageSize();
+		
+		Map<String,Object> params = new HashMap<String, Object>();
+		params.put("firstIndex", firstIndex);
+		params.put("endIndex", endIndex);
+		
+		List<SalesChance> content = salesChanceMapper.getContent(params);
+		
+//		为 Page 对象的 content 赋值
+		page.setContent(content);
+		
+//		返回 Page 对象
+		return page;
+	}
+	
+}

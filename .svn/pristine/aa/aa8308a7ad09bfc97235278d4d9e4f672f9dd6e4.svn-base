@@ -1,0 +1,91 @@
+package com.atguigu.crm.service;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.atguigu.crm.entity.Customer;
+import com.atguigu.crm.entity.SalesChance;
+import com.atguigu.crm.mapper.SalesChanceMapper;
+import com.atguigu.crm.mapper.SalesPlanMapper;
+
+@Service
+public class SalesPlanService {
+
+	@Autowired
+	private SalesPlanMapper salesPlanMapper;
+	
+	@Autowired
+	private SalesChanceMapper salesChanceMapper;
+	
+	/**
+	 * 开发计划。更新成功
+	 * @param id
+	 */
+	@Transactional
+	public void update(Integer id){
+		
+		salesPlanMapper.updateDevelop(id);
+		
+		//通过chanceId获取具体的销售机会
+		SalesChance salesChance = salesPlanMapper.getByChanceId(id);
+		System.out.println(id);
+		
+		Map<String,Object> params = new HashMap<String,Object>();
+		
+		//保存Customer
+		//String name,UUID no,String state
+		String custName = salesChance.getCustName();
+		UUID uuid = UUID.randomUUID();
+		String no = uuid.toString();
+		String state="正常";
+		
+		params.put("name", custName);
+		params.put("no", no);
+		params.put("state", state);
+		
+		salesPlanMapper.saveCustomers(params);
+		
+		//保存Contact
+		//String no,String name(contact),String tel,Integer customerId
+		String contact = salesChance.getContact();
+		String contactTel = salesChance.getContactTel();
+		
+		Customer customer = salesPlanMapper.getByUUID(no);
+		Integer customerId = (int)(long)customer.getId();
+		
+		params.put("contact", contact);
+		params.put("tel", contactTel);
+		params.put("id", customerId);
+		
+		salesPlanMapper.saveContacts(params);
+		
+	}
+
+	/**
+	 * 终止计划
+	 * @param chanceId
+	 */
+	@Transactional
+	public void fail(Integer chanceId) {
+		
+		salesPlanMapper.updateDevelopFail(chanceId);
+		
+	}
+
+	/**
+	 * 查看详细信息
+	 * @param chanceId
+	 */
+	@Transactional
+	public void querySalesDetail(Integer chanceId) {
+		
+		salesChanceMapper.getById(chanceId);
+		
+	}
+	
+}

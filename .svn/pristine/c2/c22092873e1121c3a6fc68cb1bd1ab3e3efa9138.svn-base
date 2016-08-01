@@ -1,0 +1,36 @@
+package junit.test;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import javax.sql.DataSource;
+
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.atguigu.crm.service.SalesChanceService;
+import com.atguigu.crm.service.SalesPlanService;
+
+public class DataSourceTest {
+	
+	private ApplicationContext ioc = new ClassPathXmlApplicationContext("applicationContext.xml");
+	private SalesChanceService salesChanceService = ioc.getBean(SalesChanceService.class);
+	private SalesPlanService salesPlanService = ioc.getBean(SalesPlanService.class);
+	
+	@Test
+	public void testDataSource() throws SQLException{
+		
+		DataSource dataSource = ioc.getBean(DataSource.class);
+		Connection connection = dataSource.getConnection();
+		System.out.println(connection);
+		
+	}
+	
+	@Test
+	public void testDevlopFail(){
+		salesPlanService.fail(1);
+		
+	}
+	
+}

@@ -1,0 +1,28 @@
+package com.atguigu.crm.mapper;
+
+import java.util.Map;
+import java.util.UUID;
+
+import com.atguigu.crm.entity.Customer;
+import com.atguigu.crm.entity.SalesChance;
+
+
+public interface SalesPlanMapper {
+	
+	
+	void updateDevelopFail(Integer id);
+	
+	Customer getByUUID(String uuid);
+	
+	SalesChance getByChanceId(Integer id);
+	
+	void updateDevelop(Integer id);
+	//name对应sales_chances表中的cust_name
+	//String name,UUID no,String state
+	void saveCustomers(Map<String,Object> params);
+	
+	//name对应sales_chances表中的contact
+	//String no,String name,String tel,Integer customerId
+	void saveContacts(Map<String,Object> params);
+	
+}

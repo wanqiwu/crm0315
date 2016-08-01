@@ -1,0 +1,39 @@
+package com.atguigu.crm.service;
+
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.atguigu.crm.entity.Customer;
+import com.atguigu.crm.entity.SalesChance;
+import com.atguigu.crm.mapper.SalesPlanMapper;
+
+@Service
+public class SalesPlanService {
+
+	@Autowired
+	private SalesPlanMapper salesPlanMapper;
+	
+	@Transactional
+	public void update(Integer id){
+		
+		salesPlanMapper.updateDevelop();
+		
+		SalesChance salesChance = salesPlanMapper.getByChanceId(id);
+		System.out.println(id);
+		
+		String contact = salesChance.getContact();
+		String contactTel = salesChance.getContactTel();
+		String custName = salesChance.getCustName();
+		int status = salesChance.getStatus();
+		UUID no = UUID.randomUUID();
+		String state="正常";
+		salesPlanMapper.saveCustomers(custName, no, state);
+		Customer customer = salesPlanMapper.getByCustName(custName);
+		System.out.println(customer.getId());
+		salesPlanMapper.saveContacts(contact, contactTel, (int)(long)customer.getId());
+	}
+	
+}

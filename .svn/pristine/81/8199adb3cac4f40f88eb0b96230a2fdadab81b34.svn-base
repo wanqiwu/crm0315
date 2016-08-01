@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.crm.mapper.SalesPlanMapper">
+
+	
+
+	<!-- 终止计划 -->
+	<update id="updateDevelopFail">
+		update sales_chances
+		set status=4
+		where id=#{id}
+	</update>
+	
+	
+	<!-- 通过UUID的唯一性，获取客户 -->
+	<select id="getByUUID" resultType="com.atguigu.crm.entity.Customer">
+		select id,name,no
+		from customers
+		where no=#{no}
+	</select>
+
+	<!-- 通过chanceId获取某个具体的SalesChance -->
+	<select id="getByChanceId" resultType="com.atguigu.crm.entity.SalesChance">
+		SELECT id, contact, contact_tel, cust_name,status
+		FROM sales_chances
+		WHERE id = #{id}
+	</select>
+
+	<!-- 更新计划，更新计划成功 -->
+	<update id="updateDevelop">
+		update sales_chances
+		set status=3
+		where id=#{id}
+	</update>
+	
+	<!-- 保存客户 -->
+	<insert id="saveCustomers">
+		INSERT INTO customers(id,name,no,state) VALUES(crm_seq.nextVal,#{name}, #{no}, #{state})
+	</insert>
+	
+	<!-- 保存联系人 -->
+	<insert id="saveContacts">
+		<selectKey keyProperty="id" order="BEFORE" resultType="int">
+			SELECT id FROM customers where no = #{no}
+		</selectKey>
+		INSERT INTO contacts(id,name, tel, customer_id) VALUES(crm_seq.nextVal, #{contact}, #{tel}, #{id})
+	</insert>
+	
+	
+</mapper>
